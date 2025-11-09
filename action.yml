@@ -1,0 +1,30 @@
+name: 'API Call Action'
+description: 'Call an API endpoint with an API key and custom body'
+inputs:
+  api-key:
+    description: 'API key for authentication'
+    required: true
+  endpoint:
+    description: 'The API endpoint URL to call'
+    required: true
+  body:
+    description: 'JSON string or object to send in the request body'
+    required: false
+    default: '{}'
+  method:
+    description: 'HTTP method to use (GET, POST, PUT, DELETE, etc.)'
+    required: false
+    default: 'POST'
+  headers:
+    description: 'Additional headers as JSON string (optional)'
+    required: false
+    default: '{}'
+outputs:
+  response:
+    description: 'The response from the API call'
+  status-code:
+    description: 'The HTTP status code from the response'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+
