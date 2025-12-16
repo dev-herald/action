@@ -1,29 +1,42 @@
-name: 'API Call Action'
-description: 'Call an API endpoint with an API key and custom body'
+name: 'Dev Herald PR Comment'
+description: 'Post comments on GitHub Pull Requests via Dev Herald API - supports simple markdown comments and rich templates (deployment status, test results, migrations, custom tables)'
+branding:
+  icon: 'message-circle'
+  color: 'blue'
 inputs:
   api-key:
-    description: 'API key for authentication'
+    description: 'Dev Herald API key for authentication (required)'
     required: true
-  endpoint:
-    description: 'The API endpoint URL to call'
+  pr-number:
+    description: 'Pull request number to comment on (required, e.g., 123)'
     required: true
-  body:
-    description: 'JSON string or object to send in the request body'
+  comment:
+    description: 'Markdown comment text (for simple comments). Use this OR template, not both. Example: "## Build Complete\n✅ All checks passed!"'
     required: false
-    default: '{}'
-  method:
-    description: 'HTTP method to use (GET, POST, PUT, DELETE, etc.)'
+  template:
+    description: 'Template type for rich comments (use with template-data). Options: DEPLOYMENT, TEST_RESULTS, MIGRATION, CUSTOM_TABLE'
     required: false
-    default: 'POST'
-  headers:
-    description: 'Additional headers as JSON string (optional)'
+  template-data:
+    description: 'JSON string with template-specific data (required when using template). See README for schema examples.'
     required: false
-    default: '{}'
+  sticky-id:
+    description: 'Optional identifier for updateable comments. Comments with the same sticky-id will update instead of creating new ones. Example: "deployment-status"'
+    required: false
+  api-url:
+    description: 'Dev Herald API base URL (optional, defaults to production URL)'
+    required: false
+    default: 'https://api.devherald.com/api/v1/github'
 outputs:
+  comment-id:
+    description: 'Internal Dev Herald comment ID'
+  github-comment-id:
+    description: 'GitHub comment ID'
+  github-comment-url:
+    description: 'Direct URL to the GitHub comment'
+  status:
+    description: 'Status of the comment (e.g., pending, posted)'
   response:
-    description: 'The response from the API call'
-  status-code:
-    description: 'The HTTP status code from the response'
+    description: 'Full JSON response from the API'
 runs:
   using: 'node20'
   main: 'dist/index.js'
