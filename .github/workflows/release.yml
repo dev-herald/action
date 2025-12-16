@@ -67,7 +67,7 @@ jobs:
       - name: Bump version
         id: bump_version
         run: |
-          npm version ${{ github.event.inputs.version_bump }} --no-git-tag-version
+          pnpm version ${{ github.event.inputs.version_bump }} --no-git-tag-version
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Bumped version from ${{ steps.current_version.outputs.version }} to $NEW_VERSION"
