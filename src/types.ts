@@ -5,6 +5,7 @@
 export interface SimpleCommentRequest {
   comment: string;
   prNumber: number;
+  stickyId?: string;
 }
 
 export interface TemplateCommentRequest {

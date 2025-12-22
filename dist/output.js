@@ -36,9 +36,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseResponse = parseResponse;
 exports.handleTemplateSuccess = handleTemplateSuccess;
 exports.handleSimpleSuccess = handleSimpleSuccess;
-exports.handleErrorResponse = handleErrorResponse;
+exports.handleApiErrorResponse = handleApiErrorResponse;
 exports.processResponse = processResponse;
 const core = __importStar(require("@actions/core"));
+/**
+ * ============================================================================
+ * API RESPONSE PROCESSING
+ * ============================================================================
+ *
+ * This module handles responses AFTER the API request has been made.
+ *
+ * For INPUT VALIDATION (before API call), see validation.ts
+ *
+ * Flow:
+ *   1. Parse the HTTP response body
+ *   2. Check status code (2xx = success, 4xx/5xx = error)
+ *   3. Output appropriate GitHub Actions outputs and logs
+ */
 /**
  * Parses the HTTP response data as JSON
  */
@@ -74,32 +88,69 @@ function handleSimpleSuccess(responseData) {
     core.info(`📦 Repository: ${responseData.repository}`);
 }
 /**
- * Handles an error response from the API
+ * Handles an error response from the API (after request was sent)
+ * This is for API-level errors, not input validation errors
  */
-function handleErrorResponse(statusCode, responseData) {
-    let errorMessage = `API call failed with status code ${statusCode}`;
+function handleApiErrorResponse(statusCode, responseData) {
+    const lines = [];
+    lines.push(`❌ API returned error (status ${statusCode})`);
+    // Show the main error message from API
     if (responseData.error) {
-        errorMessage += `\n❌ Error: ${responseData.error}`;
+        lines.push(`   ${responseData.error}`);
     }
+    // Show detailed validation errors from API if present
     if (responseData.errors && Array.isArray(responseData.errors)) {
-        errorMessage += '\n📋 Validation errors:';
+        lines.push('');
+        lines.push('Server validation errors:');
         responseData.errors.forEach((err, index) => {
-            errorMessage += `\n  ${index + 1}. ${err.message}`;
+            let errorLine = `  ${index + 1}. ${err.message}`;
             if (err.field) {
-                errorMessage += ` (field: ${err.field})`;
+                errorLine += ` (field: ${err.field})`;
             }
             if (err.code) {
-                errorMessage += ` [${err.code}]`;
+                errorLine += ` [${err.code}]`;
+            }
+            lines.push(errorLine);
+            // Show details if available
+            if (err.details) {
+                const detailsStr = typeof err.details === 'string'
+                    ? err.details
+                    : JSON.stringify(err.details, null, 2);
+                lines.push(`     ${detailsStr}`);
             }
         });
     }
     else if (responseData.details) {
-        errorMessage += `\n📋 Details: ${typeof responseData.details === 'string' ? responseData.details : JSON.stringify(responseData.details)}`;
+        lines.push('');
+        const detailsStr = typeof responseData.details === 'string'
+            ? responseData.details
+            : JSON.stringify(responseData.details, null, 2);
+        lines.push(`Details: ${detailsStr}`);
     }
-    core.setFailed(errorMessage);
+    // Add comment ID for support if available
+    if (responseData.commentId) {
+        lines.push('');
+        lines.push(`Comment ID: ${responseData.commentId}`);
+    }
+    // Add simple status-specific hint
+    lines.push('');
+    if (statusCode === 500) {
+        lines.push('💡 This is a server error. Check your API key and project configuration.');
+    }
+    else if (statusCode === 401) {
+        lines.push('💡 Authentication failed. Verify your API key is valid.');
+    }
+    else if (statusCode === 403) {
+        lines.push('💡 Access forbidden. Check your API key permissions.');
+    }
+    else if (statusCode === 400) {
+        lines.push('💡 Invalid request. Review the validation errors above.');
+    }
+    core.setFailed(lines.join('\n'));
 }
 /**
  * Processes the API response and sets appropriate outputs
+ * This handles responses AFTER the API request has been made
  */
 function processResponse(response, mode) {
     const responseData = parseResponse(response);
@@ -116,6 +167,6 @@ function processResponse(response, mode) {
         }
     }
     else {
-        handleErrorResponse(response.statusCode, responseData);
+        handleApiErrorResponse(response.statusCode, responseData);
     }
 }

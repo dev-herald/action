@@ -14,6 +14,9 @@ importers:
       '@actions/github':
         specifier: ^6.0.0
         version: 6.0.1
+      zod:
+        specifier: ^4.2.1
+        version: 4.2.1
     devDependencies:
       '@types/node':
         specifier: ^20.10.0
@@ -132,6 +135,9 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  zod@4.2.1:
+    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
+
 snapshots:
 
   '@actions/core@1.11.1':
@@ -247,3 +253,5 @@ snapshots:
   universal-user-agent@6.0.1: {}
 
   wrappy@1.0.2: {}
+
+  zod@4.2.1: {}
